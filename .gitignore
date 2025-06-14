@@ -22,3 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Docker volumes and data
+/docker/redis/*.rdb
+/docker/mysql/data/
+
+# Temporary files
+*.tmp
+*.temp
