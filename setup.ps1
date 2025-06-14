@@ -90,8 +90,6 @@ function New-EnvFile {
     Write-Info "Creating .env configuration file..."
     
     $appKey = "base64:" + [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((New-RandomString -Length 32)))
-    $dbPassword = New-RandomString -Length 16
-    $redisPassword = New-RandomString -Length 16
     
     $envContent = @"
 # Application Configuration
@@ -107,11 +105,11 @@ DB_HOST=visitor-analytics-db
 DB_PORT=3306
 DB_DATABASE=visitor_analytics
 DB_USERNAME=visitor_user
-DB_PASSWORD=$dbPassword
+DB_PASSWORD=visitor_password_123
 
 # Redis Configuration
 REDIS_HOST=visitor-analytics-redis
-REDIS_PASSWORD=$redisPassword
+REDIS_PASSWORD=visitor_redis_password
 REDIS_PORT=6385
 REDIS_DB=0
 
@@ -154,9 +152,9 @@ SANCTUM_STATEFUL_DOMAINS=localhost,localhost:8000,127.0.0.1,127.0.0.1:8000,::1
 MYSQL_ROOT_PASSWORD=root_password_123
 MYSQL_DATABASE=visitor_analytics
 MYSQL_USER=visitor_user
-MYSQL_PASSWORD=$dbPassword
+MYSQL_PASSWORD=visitor_password_123
 
-REDIS_PASSWORD=$redisPassword
+REDIS_PASSWORD=visitor_redis_password
 "@
 
     $envContent | Out-File -FilePath ".env" -Encoding UTF8

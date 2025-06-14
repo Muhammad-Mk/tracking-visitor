@@ -23,10 +23,10 @@ services:
     container_name: visitor-analytics-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: visitor_analytics
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_USER: visitor_user
+      MYSQL_PASSWORD: visitor_password_123
       MYSQL_ALLOW_EMPTY_PASSWORD: "no"
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
@@ -40,7 +40,7 @@ services:
     image: redis:alpine
     container_name: visitor-analytics-redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD} --port 6385
+    command: redis-server --requirepass visitor_redis_password --port 6385
     networks:
       - visitor-analytics
     ports:
