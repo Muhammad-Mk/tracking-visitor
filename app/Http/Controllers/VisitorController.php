@@ -13,9 +13,14 @@ class VisitorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $visitors = Visitor::with(['location', 'sensor'])->get();
+        $perPage = $request->input('per_page', 15);
+        $perPage = min($perPage, 100); // Limit max per page to 100
+        
+        $visitors = Visitor::with(['location', 'sensor'])
+            ->orderBy('date', 'desc')
+            ->paginate($perPage);
         return VisitorResource::collection($visitors);
     }
 

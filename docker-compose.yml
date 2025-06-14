@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: visitor-analytics-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - visitor-analytics
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: mysql:8.0
+    container_name: visitor-analytics-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: visitor_analytics
+      MYSQL_ROOT_PASSWORD: visitor_password
+      MYSQL_USER: visitor_user
+      MYSQL_PASSWORD: visitor_password
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - visitor-analytics
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:alpine
+    container_name: visitor-analytics-redis
+    restart: unless-stopped
+    command: redis-server --requirepass visitor_redis_password --port 6385
+    networks:
+      - visitor-analytics
+    ports:
+      - "6385:6385"
+    volumes:
+      - ./docker/redis:/data
+
+networks:
+  visitor-analytics:
+    driver: bridge
+
+volumes:
+  mysql_data: 

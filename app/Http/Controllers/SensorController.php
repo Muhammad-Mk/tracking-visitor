@@ -13,9 +13,12 @@ class SensorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $sensors = Sensor::with('location')->get();
+        $perPage = $request->input('per_page', 15);
+        $perPage = min($perPage, 100); // Limit max per page to 100
+        
+        $sensors = Sensor::with('location')->paginate($perPage);
         return SensorResource::collection($sensors);
     }
 

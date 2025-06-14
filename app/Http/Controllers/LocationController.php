@@ -13,9 +13,12 @@ class LocationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $locations = Location::all();
+        $perPage = $request->input('per_page', 15);
+        $perPage = min($perPage, 100); // Limit max per page to 100
+        
+        $locations = Location::paginate($perPage);
         return LocationResource::collection($locations);
     }
 
@@ -34,6 +37,9 @@ class LocationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
         ]);
 
         $location = Location::create($validated);
@@ -63,6 +69,9 @@ class LocationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
         ]);
 
         $location->update($validated);
