@@ -226,8 +226,9 @@ function Initialize-LaravelApp {
     $redisReady = $false
     for ($i = 1; $i -le 15; $i++) {
         try {
-            docker exec visitor-analytics-redis redis-cli ping 2>$null
-            if ($LASTEXITCODE -eq 0) {
+            # Try without auth first to see if Redis is responding
+            $result = docker exec visitor-analytics-redis redis-cli -p 6385 ping 2>$null
+            if ($result -match "NOAUTH|PONG") {
                 $redisReady = $true
                 break
             }

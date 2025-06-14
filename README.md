@@ -22,6 +22,7 @@ A comprehensive visitor analytics system built with Laravel 12, featuring real-t
 - **Optimized Queries**: Efficient database operations with proper indexing
 - **Pipeline Operations**: Redis pipeline for bulk operations
 - **Input Validation**: Comprehensive validation for all API endpoints
+- **Environment Variables**: Secure configuration with auto-generated passwords
 
 ### 🧪 Testing & Quality
 - **Comprehensive Test Suite**: 100% controller test coverage
@@ -33,7 +34,8 @@ A comprehensive visitor analytics system built with Laravel 12, featuring real-t
 - **Docker Containerization**: Complete Docker setup with multi-service architecture
 - **MySQL 8.0**: Robust database with proper relationships
 - **Redis Caching**: High-performance caching and session management
-- **Environment Configuration**: Flexible configuration management
+- **Automated Setup**: One-command installation with error recovery
+- **Network Optimization**: Enhanced Docker networking with retry logic
 
 ## 🚀 Quick Start
 
@@ -50,7 +52,7 @@ A comprehensive visitor analytics system built with Laravel 12, featuring real-t
 git clone https://github.com/Muhammad-Mk/tracking-visitor.git
 cd tracking-visitor
 
-# Run the setup script (Windows)
+# Run the automated setup script (Windows)
 ./setup.ps1
 
 # For clean installation (removes existing data)
@@ -58,24 +60,53 @@ cd tracking-visitor
 
 # For quick setup (skip Docker build)
 ./setup.ps1 -SkipBuild
+
+# For help and options
+./setup.ps1 -Help
 ```
 
-The setup script will automatically:
-1. ✅ Check prerequisites
-2. 🔧 Create environment configuration
-3. 🐳 Build and start Docker containers
-4. 🗄️ Run database migrations
-5. 🌱 Seed sample data
-6. ⚡ Optimize the application
-7. ✅ Verify installation
+```bash
+# For Linux/macOS
+./setup.sh
+
+# Clean installation
+./setup.sh --clean
+
+# Skip build
+./setup.sh --skip-build
+```
+
+### 🔧 What the Setup Script Does
+
+The automated setup script will:
+1. ✅ **Check Prerequisites**: Verify Docker and Docker Compose installation
+2. 🔧 **Generate Configuration**: Create secure .env file with random passwords
+3. 🧹 **Clean Environment**: Remove existing containers and networks (if -Clean flag used)
+4. 🐳 **Build Containers**: Build optimized Docker images
+5. 🌐 **Start Services**: Launch MySQL, Redis, and Laravel containers with network recovery
+6. ⏳ **Wait for Services**: Intelligent service readiness detection
+7. 📦 **Install Dependencies**: Composer packages with error handling
+8. 🗄️ **Setup Database**: Run migrations and seed realistic data
+9. ⚡ **Optimize Application**: Cache configuration, routes, and views
+10. ✅ **Verify Installation**: Test API endpoints and display summary
+
+### 🛠️ Enhanced Reliability Features
+
+- **Docker Network Recovery**: Automatic network cleanup and retry logic
+- **Service Health Checks**: Intelligent MySQL and Redis readiness detection
+- **Error Recovery**: Comprehensive error handling with fallback options
+- **Git Ownership Fix**: Automatic resolution of Docker file ownership issues
+- **Timeout Management**: Optimized waiting periods for faster setup
+- **Progress Feedback**: Clear status updates throughout the process
 
 ## 📊 Sample Data
 
 After setup, your system will include:
-- **5 Locations**: Realistic office locations across different cities
-- **17 Sensors**: Various sensor types (Motion, RFID, Camera, Door Entry, etc.)
-- **373+ Visitor Records**: 30 days of realistic visitor data
-- **9,395+ Total Visitors**: Comprehensive analytics data
+- **5 Locations**: Realistic office locations across different cities (New York, Los Angeles, Chicago, Miami, San Francisco)
+- **17 Sensors**: Various sensor types (Motion, RFID, Camera, Door Entry, Thermal, Proximity, etc.)
+- **373+ Visitor Records**: 30 days of realistic visitor data with day-of-week patterns
+- **9,395+ Total Visitors**: Comprehensive analytics data with special event days
+- **90% Active Sensors**: Realistic operational scenarios
 
 ## 🌐 API Endpoints
 
@@ -108,7 +139,7 @@ DELETE /api/visitors/{id}          # Delete visitor record
 
 ### 📈 Analytics
 ```http
-GET    /api/analytics/summary      # Overall analytics summary
+GET    /api/summary                # Overall analytics summary (cached)
 GET    /api/analytics/location-stats # Location-wise statistics
 ```
 
@@ -118,12 +149,13 @@ GET    /api/analytics/location-stats # Location-wise statistics
 ```http
 GET /api/locations?per_page=10     # 10 items per page
 GET /api/sensors?per_page=25       # 25 items per page (max: 100)
+GET /api/visitors?per_page=50      # 50 items per page (default: 15)
 ```
 
 #### Analytics Filters
 ```http
-GET /api/analytics/summary?days=7           # Last 7 days
-GET /api/analytics/summary?location_id=1    # Specific location
+GET /api/summary?days=7            # Last 7 days
+GET /api/summary?location_id=1     # Specific location
 ```
 
 ## 📝 API Examples
@@ -146,6 +178,7 @@ curl -X POST http://localhost:8000/api/sensors \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Main Entrance Motion Sensor",
+    "type": "Motion Sensor",
     "location_id": 1,
     "status": "active"
   }'
@@ -163,9 +196,26 @@ curl -X POST http://localhost:8000/api/visitors \
   }'
 ```
 
-### Get Analytics
+### Get Analytics Summary
 ```bash
-curl http://localhost:8000/api/analytics/summary
+curl http://localhost:8000/api/summary
+```
+
+**Response:**
+```json
+{
+  "total_visitors": 9395,
+  "average_per_day": 241.29,
+  "total_locations": 5,
+  "active_sensors": 14,
+  "locations_stats": [
+    {
+      "location": "New York Office",
+      "total_visitors": 2156,
+      "average_per_day": 55.28
+    }
+  ]
+}
 ```
 
 ## 🏗️ Architecture
@@ -185,6 +235,7 @@ locations
 sensors
 ├── id (Primary Key)
 ├── name
+├── type
 ├── location_id (Foreign Key)
 ├── status (active/inactive)
 ├── created_at
@@ -210,7 +261,7 @@ visitors
 
 ### Redis Configuration
 - **Port**: 6385 (custom port for security)
-- **Password**: `visitor_redis_password`
+- **Password**: Auto-generated secure password
 - **Usage**: Caching, sessions, queue management
 - **Pipeline Operations**: Optimized bulk operations
 
@@ -244,7 +295,7 @@ docker exec visitor-analytics-app php artisan test --filter=SummaryControllerTes
 
 ## 🔧 Development
 
-### Local Development Setup
+### Manual Development Setup (Alternative)
 ```bash
 # Start containers
 docker-compose up -d
@@ -256,7 +307,7 @@ docker exec visitor-analytics-app composer install
 docker exec visitor-analytics-app php artisan migrate
 
 # Seed database
-docker exec visitor-analytics-app php artisan db:seed
+docker exec visitor-analytics-app php artisan db:seed --class=VisitorAnalyticsSeeder
 ```
 
 ### Useful Commands
@@ -274,7 +325,7 @@ docker exec visitor-analytics-app php artisan cache:clear
 docker exec visitor-analytics-app php artisan queue:work
 
 # Generate new seeder data
-docker exec visitor-analytics-app php artisan db:seed --class=VisitorAnalyticsSeeder
+docker exec visitor-analytics-app php artisan db:seed --class=VisitorAnalyticsSeeder --force
 ```
 
 ### Database Management
@@ -292,15 +343,15 @@ docker exec visitor-analytics-app php artisan migrate:status
 ## 📈 Performance Optimization
 
 ### Redis Caching Strategy
-- **Analytics Summary**: Cached for 1 hour
-- **Location Stats**: Cached for 1 hour
-- **Individual Location Data**: Cached separately
+- **Analytics Summary**: Cached for 1 hour (3600 seconds)
+- **Location Stats**: Individual location caching
+- **Visitor Count**: Total visitor count caching
 - **Pipeline Operations**: Bulk cache operations for efficiency
 
 ### Database Optimization
 - **Proper Indexing**: Optimized queries with database indexes
 - **Eager Loading**: Efficient relationship loading
-- **Pagination**: Memory-efficient data retrieval
+- **Pagination**: Memory-efficient data retrieval (default: 15, max: 100)
 
 ### Application Optimization
 - **Config Caching**: Cached configuration for production
@@ -310,17 +361,18 @@ docker exec visitor-analytics-app php artisan migrate:status
 ## 🚀 Deployment
 
 ### Production Deployment
-1. **Environment Setup**:
+1. **Clone and Setup**:
    ```bash
-   cp .env.example .env
-   # Configure production values
+   git clone https://github.com/Muhammad-Mk/tracking-visitor.git
+   cd tracking-visitor
+   ./setup.ps1  # or ./setup.sh for Linux/macOS
    ```
 
 2. **Security Configuration**:
-   - Change Redis password
-   - Update database credentials
-   - Set strong APP_KEY
+   - Setup script auto-generates secure passwords
+   - Update APP_URL for your domain
    - Configure proper CORS settings
+   - Set APP_ENV=production
 
 3. **Performance Optimization**:
    ```bash
@@ -329,27 +381,27 @@ docker exec visitor-analytics-app php artisan migrate:status
    docker exec visitor-analytics-app php artisan view:cache
    ```
 
-### Environment Variables
+### Environment Variables (Auto-Generated)
 ```env
 # Application
-APP_NAME="Visitor Analytics"
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://your-domain.com
+APP_NAME="Laravel Visitor Analytics"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-# Database
-DB_HOST=your-db-host
+# Database (Auto-generated secure passwords)
+DB_HOST=visitor-analytics-db
 DB_DATABASE=visitor_analytics
-DB_USERNAME=your-db-user
-DB_PASSWORD=your-secure-password
+DB_USERNAME=visitor_user
+DB_PASSWORD=<auto-generated-16-char-password>
 
-# Redis
-REDIS_HOST=your-redis-host
-REDIS_PASSWORD=your-secure-redis-password
+# Redis (Auto-generated secure passwords)
+REDIS_HOST=visitor-analytics-redis
+REDIS_PASSWORD=<auto-generated-16-char-password>
 REDIS_PORT=6385
 
 # Cache & Sessions
-CACHE_STORE=redis
+CACHE_DRIVER=redis
 SESSION_DRIVER=redis
 QUEUE_CONNECTION=redis
 ```
@@ -372,17 +424,30 @@ QUEUE_CONNECTION=redis
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🆘 Troubleshooting
 
-### Common Issues
+### Common Issues & Solutions
+
+**Setup Script Fails**:
+```bash
+# Clean everything and retry
+./setup.ps1 -Clean
+
+# Check Docker status
+docker --version
+docker-compose --version
+```
 
 **Port Already in Use**:
 ```bash
 # Stop existing containers
-docker-compose down
+docker-compose down -v
 
-# Check port usage
+# Check port usage (Windows)
 netstat -an | findstr :8000
+
+# Check port usage (Linux/macOS)
+lsof -i :8000
 ```
 
 **Database Connection Issues**:
@@ -392,26 +457,61 @@ docker-compose ps
 
 # View database logs
 docker-compose logs visitor-analytics-db
+
+# Test database connection
+docker exec visitor-analytics-app php artisan tinker --execute="DB::connection()->getPdo();"
 ```
 
 **Redis Connection Issues**:
 ```bash
+# Check Redis container
+docker exec visitor-analytics-redis redis-cli -p 6385 ping
+
+# View Redis logs
+docker-compose logs visitor-analytics-redis
+
 # Test Redis connection
-docker exec visitor-analytics-redis redis-cli -p 6385 -a visitor_redis_password ping
+docker exec visitor-analytics-app php artisan tinker --execute="Redis::ping();"
+```
+
+**Docker Network Issues**:
+```bash
+# Clean Docker networks
+docker network prune -f
+
+# Restart with force recreate
+docker-compose up -d --force-recreate
+```
+
+**Permission Issues (Linux/macOS)**:
+```bash
+# Fix file permissions
+sudo chown -R $USER:$USER .
+chmod +x setup.sh
 ```
 
 ### Getting Help
-- 📧 **Email**: [your-email@example.com]
-- 🐛 **Issues**: [GitHub Issues](https://github.com/Muhammad-Mk/tracking-visitor/issues)
-- 📖 **Documentation**: This README and inline code comments
 
-## 🙏 Acknowledgments
+- **GitHub Issues**: [Report bugs or request features](https://github.com/Muhammad-Mk/tracking-visitor/issues)
+- **Documentation**: Check this README for comprehensive guides
+- **API Testing**: Use the provided curl examples
+- **Logs**: Always check `docker-compose logs -f` for detailed error information
 
-- **Laravel Framework**: For the robust PHP framework
-- **Docker**: For containerization capabilities
-- **Redis**: For high-performance caching
-- **MySQL**: For reliable data storage
+### Performance Monitoring
+
+```bash
+# Check container resource usage
+docker stats
+
+# Monitor API response times
+curl -w "@curl-format.txt" -o /dev/null -s http://localhost:8000/api/summary
+
+# Check Redis memory usage
+docker exec visitor-analytics-redis redis-cli -p 6385 info memory
+```
 
 ---
 
-**Built with ❤️ using Laravel 12, Docker, and modern development practices.**
+**🎉 Ready to track visitors like a pro!** 
+
+For questions or support, please open an issue on GitHub.
