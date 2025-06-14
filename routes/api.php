@@ -27,7 +27,5 @@ Route::apiResource('sensors', SensorController::class);
 Route::apiResource('visitors', VisitorController::class);
 
 // Analytics routes
-Route::prefix('analytics')->group(function () {
-    Route::get('summary', [SummaryController::class, 'index']);
-    Route::get('location-stats', [SummaryController::class, 'locationStats']);
-}); 
+Route::get('summary', [SummaryController::class, 'index']);
+Route::get('location-stats', [SummaryController::class, 'locationStats']); 

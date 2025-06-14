@@ -140,7 +140,7 @@ DELETE /api/visitors/{id}          # Delete visitor record
 ### 📈 Analytics
 ```http
 GET    /api/summary                # Overall analytics summary (cached)
-GET    /api/analytics/location-stats # Location-wise statistics
+GET    /api/location-stats         # Location-wise statistics
 ```
 
 ### 🔍 Query Parameters
@@ -156,6 +156,7 @@ GET /api/visitors?per_page=50      # 50 items per page (default: 15)
 ```http
 GET /api/summary?days=7            # Last 7 days
 GET /api/summary?location_id=1     # Specific location
+GET /api/location-stats?location_id=1  # Specific location stats
 ```
 
 ## 📝 API Examples
@@ -204,18 +205,41 @@ curl http://localhost:8000/api/summary
 **Response:**
 ```json
 {
-  "total_visitors": 9395,
-  "average_per_day": 241.29,
-  "total_locations": 5,
-  "active_sensors": 14,
-  "locations_stats": [
+  "total_visitors": 1911,
+  "average_visitors_per_day": 273,
+  "locations_count": 5,
+  "active_sensors_count": 12,
+  "daily_stats": [
     {
-      "location": "New York Office",
-      "total_visitors": 2156,
-      "average_per_day": 55.28
+      "date": "2025-06-08T00:00:00.000000Z",
+      "total_visitors": "96",
+      "locations_count": 5
     }
   ]
 }
+```
+
+### Get Location Statistics
+```bash
+curl http://localhost:8000/api/location-stats
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Main Office Building",
+    "total_visitors": 50,
+    "sensors_count": 2
+  },
+  {
+    "id": 2,
+    "name": "Branch Office Downtown",
+    "total_visitors": 94,
+    "sensors_count": 4
+  }
+]
 ```
 
 ## 🏗️ Architecture
